@@ -29,7 +29,7 @@ ul#features {
 }
 
 li {
-  flex: 2;
+  flex: 14;
   font-weight: 500;
   width: 32%;
   display: inline;
@@ -42,6 +42,10 @@ li {
   border-color: #A8A8A8;
   background-color: #696969;
   color: #D3D3D3;
+}
+
+li:nth-child(2) {
+  flex: 11;
 }
 
 li.selected {
@@ -63,7 +67,7 @@ li:active {
 }
 
 li:last-child {
-  flex: 1;
+  flex: 6;
   margin-right: 0;
 }
 
