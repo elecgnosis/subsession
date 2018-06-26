@@ -1,7 +1,7 @@
 {
-  "name": "Chrome Extension",
+  "name": "Subsession",
   "version": "0.1.0",
-  "description": "Unnamed, anonymous Chrome extension for API capability testing.",
+  "description": "Saves tabs from current window to a subsession that can be restored on this or any synced desktop browser.",
   "permissions": [
     "storage",
     "declarativeContent",
