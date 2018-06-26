@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Saves tabs from current window to a subsession that can be restored on this or any synced desktop browser.",
   "permissions": [
+    "tabs",
     "storage",
     "declarativeContent",
     "activeTab"
@@ -11,7 +12,7 @@
     "scripts": ["background.js"],
     "persistent": true
   },
-  "page_action": {
+  "browser_action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/subsession-active16.png",

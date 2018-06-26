@@ -10,8 +10,8 @@ body {
   row-gap: 10px;
   margin: 10px;
   place-content: stretch stretch;
-  min-width: 320px;
-  min-height: 240px;
+  width: 320px;
+  height: 240px;
 }
 
 ul#features {
@@ -28,7 +28,8 @@ ul#features {
   align-items: stretch;
 }
 
-li {
+#features li {
+  transition: color .125s, background-color .125s, border-color .125s;
   flex: 14;
   font-weight: 500;
   width: 32%;
@@ -39,41 +40,67 @@ li {
   border-style: solid;
   border-radius: 7px;
   user-select: none;
-  border-color: #A8A8A8;
+  color: #D3D3D3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#features li, #tab-list li:hover {
   background-color: #696969;
   color: #D3D3D3;
 }
 
-li:nth-child(2) {
+#features li div {
+  flex: 1;
+}
+
+#features li:nth-child(2) {
   flex: 11;
 }
 
-li.selected {
+#features li.selected {
   border-color: #F3F3F3;
   background-color: #FFFFFF;
   color: #000000;
 }
 
-li:hover {
+#features li:hover, #tab-list li {
   border-color: #DADADA;
   background-color: #D3D3D3;
   color: #696969;
 }
 
-li:active {
+#features li:active {
   border-color: #737373;
   background-color: #000000;
   color: #FFFFFF;
 }
 
-li:last-child {
+#features li:last-child {
   flex: 6;
   margin-right: 0;
 }
 
-#tab-container {
+#content {
   grid-row: 2;
-  background-color: #E0E0E0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+#tab-list {
+  margin: 0;
+  padding: 0;
+}
+
+#tab-list li {
+  margin: 4px 0;
+}
+
+#tab-list li label {
+  display: inline-block;
+  width: 280px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
