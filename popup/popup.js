@@ -1,15 +1,24 @@
-const getSubsessionStorage = () => (new Promise((resolve, reject) => chrome.storage.local.get(['subsession@subsession.extensions.chrome'], resolve)));
+const CLASS_SELECTED = 'selected';
+const CLASS_HIDE = 'hide';
+const SUBSESSIONSTORAGEIDENTIFIER = 'subsession@subsession.extensions.chrome';
+
+const getSubsessionStorage = () => (new Promise((resolve, reject) => chrome.storage.local.get([SUBSESSIONSTORAGEIDENTIFIER], (storage) => resolve(storage[SUBSESSIONSTORAGEIDENTIFIER]))));
 const getCurrentWindowTabs = () => (new Promise((resolve, reject) => chrome.tabs.query({currentWindow: true}, resolve)));
+const setSubsessionStorage = (item) => (new Promise((resolve, reject) => chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
 
 const currentSession = [];
 
+const setElementAttributes = (element, attrs) => Object.keys(attrs).forEach((key) => element.setAttribute(key, attrs[key]));
+
 const buildTabListItemElement = (tabData) => {
   const tabListItemCheckbox = document.createElement('input');
-  tabListItemCheckbox.type = 'checkbox';
-  tabListItemCheckbox.name = tabData.id;
-  tabListItemCheckbox.value = tabData.id;
-  tabListItemCheckbox.id = tabData.id;
-  tabListItemCheckbox.checked = true;
+  setElementAttributes(tabListItemCheckbox, {
+    type: 'checkbox',
+    name: tabData.id,
+    value: tabData.id,
+    id: tabData.id,
+    checked: true,
+  });
 
   const tabListItemCheckboxLabel = document.createElement('label');
   tabListItemCheckboxLabel.htmlFor = tabData.id;
@@ -28,9 +37,23 @@ const buildTabListItemElement = (tabData) => {
   return tabListItemElement;
 };
 
+const buildTabList = (tab) => currentSession.push(document.getElementById('tab-list').appendChild(buildTabListItemElement(tab)));
+
+const swapCssClass = (cssClass, element, otherElement) => {
+  element.classList.add(cssClass);
+  otherElement.classList.remove(cssClass);
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   const tabListElement = document.getElementById('tab-list');
   const selectAllTabsCheckboxElement = document.getElementById('select-all-tabs');
+  const listButton = document.getElementById('list-subsessions');
+  const newSubsessionButton = document.getElementById('new-subsession');
+  const newSubsessionView = document.getElementById('tab-list-container');
+  const listSubsessionsView = document.getElementById('subsession-list');
+  const saveSubsessionButton = document.getElementById('save-subsession');
+  const newSubsessionName = document.getElementById('new-subsession-name');
+
   const currentWindowTabs = await getCurrentWindowTabs();
 
   selectAllTabsCheckboxElement.addEventListener('click', (event) => {
@@ -39,56 +62,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  currentWindowTabs.forEach((tab) => {
-    const tabListItemElement = buildTabListItemElement(tab);
-    currentSession.push(tabListItemElement);
-    tabListElement.appendChild(tabListItemElement);
-  });
-
-
-  const classSelected = 'selected';
-  const classHide = 'hide';
-
-  const swapCssClass = (cssClass, element, otherElement) => {
-    element.classList.add(cssClass);
-    otherElement.classList.remove(cssClass);
-  };
-
-  const selectButton = (button, otherButton) => {
-    button.classList.add(classSelected);
-    otherButton.classList.remove(classSelected);
-  };
-
-  const displayView = (view, otherView) => {
-    view.classList.remove(classHide);
-    otherView.classList.add(classHide);
-  };
-
-  const listButton = document.getElementById('list-subsessions');
-  const newSubsessionButton = document.getElementById('new-subsession');
-  const newSubsessionView = document.getElementById('tab-list-container');
-  const listSubsessionsView = document.getElementById('subsession-list');
   listButton.addEventListener('click', (event) => {
-    swapCssClass(classSelected, listButton, newSubsessionButton);
-    swapCssClass(classHide, newSubsessionView, listSubsessionsView);
-  });
-  newSubsessionButton.addEventListener('click', (event) => {
-    swapCssClass(classSelected, newSubsessionButton, listButton);
-    swapCssClass(classHide, listSubsessionsView, newSubsessionView);
+    swapCssClass(CLASS_SELECTED, listButton, newSubsessionButton);
+    swapCssClass(CLASS_HIDE, newSubsessionView, listSubsessionsView);
   });
 
-  const saveSubsessionButton = document.getElementById('save-subsession');
-  const newSubsessionName = document.getElementById('new-subsession-name');
+  newSubsessionButton.addEventListener('click', (event) => {
+    swapCssClass(CLASS_SELECTED, newSubsessionButton, listButton);
+    swapCssClass(CLASS_HIDE, listSubsessionsView, newSubsessionView);
+  });
+
   saveSubsessionButton.addEventListener('click', async (event) => {
+    const currentTabs = await getCurrentWindowTabs();
     //TODO: disable button until something is typed
     //TODO: check input against existing subsession names
+    if (newSubsessionName.value.trim().length === 0) {
+      //TODO: Turn this into user-facing message.
+      return console.log('no name provided');
+    }
     const checkedTabIds = Array.from(document.getElementById('tab-list').children)
       .filter((child) => child.children[0].checked && child.children[0].value !== "false")
       .map((child) => child.children[0].value);
-    if (checkedTabIds.length === 0) return; //nothing to do
+    if (checkedTabIds.length === 0) {
+      //TODO: Turn this into user-facing message.
+      return console.log('no tabs selected'); //nothing to do
+    }
 
-    // const subsessionStorage = await getSubsessionStorage();
-    // subsessionStorage[newSubsessionName] =
+    const subsessionStorage = await getSubsessionStorage() || {};
+
+    if (Object.keys(subsessionStorage).length > 0 && Object.keys(subsessionStorage).includes(newSubsessionName.value)) {
+      //TODO: Turn this into user-facing message. Checkbox to overwrite existing?
+      return console.log('subsession with name provided already exists');
+    }
+
+    const setStorageResult = await setSubsessionStorage({[newSubsessionName.value]: currentTabs.filter((tab) => checkedTabIds.includes(tab.id.toString()))});
   });
 
+  currentWindowTabs.forEach(buildTabList); //couldn't pass in tabListElement. What else can I do?
 });
