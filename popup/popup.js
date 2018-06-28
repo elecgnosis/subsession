@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   saveSubsessionButton.addEventListener('click', async (event) => {
+    // event.preventDefault();
     const currentTabs = await getCurrentWindowTabs();
     //TODO: disable button until something is typed
     //TODO: check input against existing subsession names
@@ -80,10 +81,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       //TODO: Turn this into user-facing message.
       return console.log('no name provided');
     }
-    const checkedTabIds = Array.from(document.getElementById('tab-list').children)
-      .filter((child) => child.children[0].checked && child.children[0].value !== "false")
-      .map((child) => child.children[0].value);
-    if (checkedTabIds.length === 0) {
+    const tabsToSave = currentTabs
+      .filter((tab) => Array.from(document.getElementById('tab-list').children)
+        .filter((child) => child.children[0].checked && child.children[0].value !== "false")
+          .map((child) => child.children[0].value)
+            .includes(tab.id.toString()));
+    if (tabsToSave.length === 0) {
       //TODO: Turn this into user-facing message.
       return console.log('no tabs selected'); //nothing to do
     }
@@ -95,7 +98,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       return console.log('subsession with name provided already exists');
     }
 
-    const setStorageResult = await setSubsessionStorage({[newSubsessionName.value]: currentTabs.filter((tab) => checkedTabIds.includes(tab.id.toString()))});
+    setSubsessionStorage({[newSubsessionName.value]: tabsToSave});
+    // setSubsessionStorage({[newSubsessionName.value]: currentTabs.filter((tab) => checkedTabIds.includes(tab.id.toString()))});
+    return false;
   });
 
   currentWindowTabs.forEach(buildTabList); //couldn't pass in tabListElement. What else can I do?

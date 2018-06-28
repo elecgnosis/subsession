@@ -17,7 +17,7 @@
         </li>
       </ul>
       <div id="content">
-        <div id="tab-list-container" class="view">
+        <form id="tab-list-container" class="view">
           <div id="tab-list-view">
             <ul id="tab-list">
               <li title="Select All">
@@ -27,9 +27,14 @@
           </div>
           <div id="save-subsession-form">
             <button id="save-subsession">Save</button>
-            <input id="new-subsession-name" type="text" placeholder="Subsession Name"/>
+            <input
+              id="new-subsession-name"
+              type="text"
+              placeholder="Subsession Name"
+              required="true"
+            />
           </div>
-        </div>
+        </form>
         <div id="subsession-list" class="view hide">
 
         </div>
