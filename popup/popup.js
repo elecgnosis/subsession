@@ -1,4 +1,5 @@
-const getCurrentWindow = () => (new Promise((resolve, reject) => chrome.windows.getCurrent({}, resolve)));
+const getSubsessionStorage = () => (new Promise((resolve, reject) => chrome.storage.local.get(['subsession@subsession.extensions.chrome'], resolve)));
+const getCurrentWindowTabs = () => (new Promise((resolve, reject) => chrome.tabs.query({currentWindow: true}, resolve)));
 
 const currentSession = [];
 
@@ -27,41 +28,23 @@ const buildTabListItemElement = (tabData) => {
   return tabListItemElement;
 };
 
-const buildTabListHeaderElement = () => {
-  const selectAllTabsCheckboxElementId = 'select-all-tabs';
-  const selectAllTabsCheckbox = document.createElement('input');
-  selectAllTabsCheckbox.type = 'checkbox';
-  selectAllTabsCheckbox.checked = true;
-  selectAllTabsCheckbox.id = selectAllTabsCheckboxElementId;
-
-  const selectAllTabsLabel = document.createElement('label');
-  selectAllTabsLabel.htmlFor = selectAllTabsCheckboxElementId;
-  selectAllTabsLabel.textContent = 'Select All';
-
-  const tabListHeaderElement = document.createElement('li');
-  tabListHeaderElement.appendChild(selectAllTabsCheckbox);
-  tabListHeaderElement.appendChild(selectAllTabsLabel);
-  selectAllTabsCheckbox.addEventListener('click', (event) => {
-    const tabListItems = document.getElementById('tab-list').children;
-    for (let i = 1; i < tabListItems.length; i += 1) {
-      tabListItems[i].children[0].checked = event.target.checked;
-    }
-  });
-
-  return tabListHeaderElement
-};
-
 document.addEventListener('DOMContentLoaded', async () => {
   const tabListElement = document.getElementById('tab-list');
-  const currentWindow = await getCurrentWindow();
-  chrome.tabs.query({windowId: currentWindow.id}, (tabs) => {
-    tabListElement.appendChild(buildTabListHeaderElement());
-    tabs.forEach((tab) => {
-      const tabListItemElement = buildTabListItemElement(tab);
-      currentSession.push(tabListItemElement);
-      tabListElement.appendChild(tabListItemElement)
+  const selectAllTabsCheckboxElement = document.getElementById('select-all-tabs');
+  const currentWindowTabs = await getCurrentWindowTabs();
+
+  selectAllTabsCheckboxElement.addEventListener('click', (event) => {
+    Array.from(tabListElement.children).forEach((child) => {
+      child.children[0].checked = event.target.checked;
     });
   });
+
+  currentWindowTabs.forEach((tab) => {
+    const tabListItemElement = buildTabListItemElement(tab);
+    currentSession.push(tabListItemElement);
+    tabListElement.appendChild(tabListItemElement);
+  });
+
 
   const classSelected = 'selected';
   const classHide = 'hide';
@@ -92,6 +75,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   newSubsessionButton.addEventListener('click', (event) => {
     swapCssClass(classSelected, newSubsessionButton, listButton);
     swapCssClass(classHide, listSubsessionsView, newSubsessionView);
+  });
+
+  const saveSubsessionButton = document.getElementById('save-subsession');
+  const newSubsessionName = document.getElementById('new-subsession-name');
+  saveSubsessionButton.addEventListener('click', async (event) => {
+    //TODO: disable button until something is typed
+    //TODO: check input against existing subsession names
+    const checkedTabIds = Array.from(document.getElementById('tab-list').children)
+      .filter((child) => child.children[0].checked && child.children[0].value !== "false")
+      .map((child) => child.children[0].value);
+    if (checkedTabIds.length === 0) return; //nothing to do
+
+    // const subsessionStorage = await getSubsessionStorage();
+    // subsessionStorage[newSubsessionName] =
   });
 
 });

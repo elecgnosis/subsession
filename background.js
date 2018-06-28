@@ -10,6 +10,13 @@
 //   });
 // });
 
+
+// const getSubsessionStorage = () => (new Promise((resolve, reject) => chrome.storage.local.get(['subsession@subsession.extensions.chrome'], resolve)));
+//
+// chrome.runtime.onInstalled.addListener(async () => {
+//   const subsessionStorage = await getSubsessionStorage();
+// });
+
 chrome.runtime.onMessage.addListener((message) => {
   console.log(message);
 });
