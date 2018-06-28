@@ -4,14 +4,18 @@ body {
   background-color: #E7E7E7;
 }
 
+#tab-list-container.view.hide, #subsession-list.view.hide {
+  display: none;
+}
+
 #subsession {
   display: grid;
-  grid-template-rows: 1fr 7fr;
+  grid-template-rows: 1fr 9fr;
   row-gap: 10px;
   margin: 10px;
   place-content: stretch stretch;
   width: 320px;
-  height: 240px;
+  height: 280px;
 }
 
 ul#features {
@@ -32,9 +36,7 @@ ul#features {
   transition: color .125s, background-color .125s, border-color .125s;
   flex: 14;
   font-weight: 500;
-  width: 32%;
-  display: inline;
-  margin-right: 2%;
+  margin-right: 5px;
   padding: 5px;
   border-width: 1px;
   border-style: solid;
@@ -59,7 +61,8 @@ ul#features {
   flex: 11;
 }
 
-#features li.selected {
+#features li.selected, #features li.selected:hover, #features li.selected:active {
+  transition: none;
   border-color: #F3F3F3;
   background-color: #FFFFFF;
   color: #000000;
@@ -84,17 +87,36 @@ ul#features {
 
 #content {
   grid-row: 2;
-  overflow-y: auto;
-  overflow-x: hidden;
+}
+
+#tab-list-container {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+
+#tab-list-view {
+  flex: 0 0 auto;
+  overflow: auto;
 }
 
 #tab-list {
-  margin: 0;
+  list-style-type: none;
+  margin: 0 0 10px 0;
   padding: 0;
 }
 
 #tab-list li {
   margin: 4px 0;
+}
+#tab-list li:first-child {
+  margin: 0 0 4px 0;
+}
+#tab-list li:last-child {
+  margin 4px 0 0 0;
 }
 
 #tab-list li label {
@@ -103,4 +125,15 @@ ul#features {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+#save-subsession-form {
+  flex: 1 0 auto;
+}
+
+#save-subsession {
+  display: inline;
+}
+#subsession-name {
+  display: inline;
 }

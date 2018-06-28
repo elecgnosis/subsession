@@ -3,12 +3,13 @@
     <link rel="stylesheet" type="text/css" href="popup.css" />
   </head>
   <body>
+    <!-- <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div> -->
     <div id="subsession">
       <ul id="features">
-        <li class="selected">
-          <div>Save New Subsession</div>
+        <li id="new-subsession" class="selected">
+          <div>New Subsession</div>
         </li>
-        <li>
+        <li id="list-subsessions">
           <div>List Subsessions</div>
         </li>
         <li>
@@ -16,7 +17,18 @@
         </li>
       </ul>
       <div id="content">
-        <ul id="tab-list"></ul>
+        <div id="tab-list-container" class="view">
+          <div id="tab-list-view">
+            <ul id="tab-list"></ul>
+          </div>
+          <div id="save-subsession-form">
+            <button id="save-subsession">Save</button>
+            <input id="subsession-name" type="text" placeholder="Subsession Name"/>
+          </div>
+        </div>
+        <div id="subsession-list" class="view hide">
+123 can't see me
+        </div>
       </div>
     </div>
   </body>

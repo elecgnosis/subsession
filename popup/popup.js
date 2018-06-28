@@ -1,31 +1,17 @@
-// let mainButton = document.getElementById('main-button');
-
-// mainButton.onclick = function(element) {
-//   chrome.runtime.sendMessage('mainButton:click');
-// };
-//
-const getCurrentWindow = () => {
-  return new Promise((resolve, reject) => {
-    chrome.windows.getCurrent({}, (window) => {
-      resolve(window);
-    });
-  });
-};
+const getCurrentWindow = () => (new Promise((resolve, reject) => chrome.windows.getCurrent({}, resolve)));
 
 const currentSession = [];
 
 const buildTabListItemElement = (tabData) => {
-  const uniqueTabIdentifier = 'tab-' + tabData.id;
-
   const tabListItemCheckbox = document.createElement('input');
   tabListItemCheckbox.type = 'checkbox';
-  tabListItemCheckbox.name = uniqueTabIdentifier;
-  tabListItemCheckbox.value = uniqueTabIdentifier;
-  tabListItemCheckbox.id = uniqueTabIdentifier;
+  tabListItemCheckbox.name = tabData.id;
+  tabListItemCheckbox.value = tabData.id;
+  tabListItemCheckbox.id = tabData.id;
   tabListItemCheckbox.checked = true;
 
   const tabListItemCheckboxLabel = document.createElement('label');
-  tabListItemCheckboxLabel.htmlFor = uniqueTabIdentifier;
+  tabListItemCheckboxLabel.htmlFor = tabData.id;
   tabListItemCheckboxLabel.textContent = tabData.title;
 
   const tabListItemElement = document.createElement('li');
@@ -65,7 +51,7 @@ const buildTabListHeaderElement = () => {
   return tabListHeaderElement
 };
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const tabListElement = document.getElementById('tab-list');
   const currentWindow = await getCurrentWindow();
   chrome.tabs.query({windowId: currentWindow.id}, (tabs) => {
@@ -76,4 +62,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       tabListElement.appendChild(tabListItemElement)
     });
   });
+
+  const classSelected = 'selected';
+  const classHide = 'hide';
+
+  const swapCssClass = (cssClass, element, otherElement) => {
+    element.classList.add(cssClass);
+    otherElement.classList.remove(cssClass);
+  };
+
+  const selectButton = (button, otherButton) => {
+    button.classList.add(classSelected);
+    otherButton.classList.remove(classSelected);
+  };
+
+  const displayView = (view, otherView) => {
+    view.classList.remove(classHide);
+    otherView.classList.add(classHide);
+  };
+
+  const listButton = document.getElementById('list-subsessions');
+  const newSubsessionButton = document.getElementById('new-subsession');
+  const newSubsessionView = document.getElementById('tab-list-container');
+  const listSubsessionsView = document.getElementById('subsession-list');
+  listButton.addEventListener('click', (event) => {
+    swapCssClass(classSelected, listButton, newSubsessionButton);
+    swapCssClass(classHide, newSubsessionView, listSubsessionsView);
+  });
+  newSubsessionButton.addEventListener('click', (event) => {
+    swapCssClass(classSelected, newSubsessionButton, listButton);
+    swapCssClass(classHide, listSubsessionsView, newSubsessionView);
+  });
+
 });
