@@ -2,10 +2,13 @@
 //TODO: show all windows in accordion menu in collapsed state, current window expanded
 //TODO: show favicon in list
 
+const SELECT_ALL_TABS = 'select-all-tabs';
 const CLASS_SELECTED = 'selected';
 const CLASS_HIDE = 'hide';
 const EVENT_CLICK = 'click';
+const EVENT_EVAL_CHECKBOX_LIST = 'eval-checkbox-list';
 const SUBSESSIONSTORAGEIDENTIFIER = 'subsession@subsession.extensions.chrome';
+const evalCheckboxListEvent = new Event(EVENT_EVAL_CHECKBOX_LIST);
 
 const getSubsessionStorage = () => (new Promise((resolve, reject) =>
   chrome.storage.local.get([SUBSESSIONSTORAGEIDENTIFIER], (storage) =>
@@ -15,15 +18,17 @@ const getCurrentWindowTabs = () => (new Promise((resolve, reject) =>
 const setSubsessionStorage = (item) => (new Promise((resolve, reject) =>
   chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
 
-const currentSession = [];
+const currentSessionTabs = [];
+currentSessionTabs
 
-const setElementAttributes = (element, attrs) =>
+const setElementAttributes = (element, attrs) => {
   Object.keys(attrs).forEach((key) =>
     element.setAttribute(key, attrs[key]));
+  return element;
+}
 
-const buildTabListItemElement = (tabData) => {
-  const tabListItemCheckbox = document.createElement('input');
-  setElementAttributes(tabListItemCheckbox, {
+const buildTabListItemCheckbox = (tabData) =>
+  setElementAttributes(document.createElement('input'), {
     type: 'checkbox',
     name: tabData.id,
     value: tabData.id,
@@ -31,32 +36,28 @@ const buildTabListItemElement = (tabData) => {
     checked: true,
   });
 
+const buildTabListItemElement = (tabData) => {
   const tabListItemCheckboxLabel = document.createElement('label');
   tabListItemCheckboxLabel.htmlFor = tabData.id;
   tabListItemCheckboxLabel.textContent = tabData.title;
 
   const tabListItemElement = document.createElement('li');
   tabListItemElement.setAttribute('title', tabData.title);
-  tabListItemElement.appendChild(tabListItemCheckbox);
+  tabListItemElement.appendChild(buildTabListItemCheckbox(tabData));
   tabListItemElement.appendChild(tabListItemCheckboxLabel);
 
   tabListItemElement.addEventListener('change', (event) => {
-    const selectAllTabsCheckbox = document.getElementById('select-all-tabs');
-    if (selectAllTabsCheckbox.checked === true
-      && selectAllTabsCheckbox.checked !== event.checked) {
-        selectAllTabsCheckbox.indeterminate = true;
-      }
-      //TODO: Fix indeterminate state behavior. Should deselect on all unselected
-      //      and select on all selected (manual or auto), indeterminate otherwise.
-      //TODO: Handle single tab case
+    document.getElementById(SELECT_ALL_TABS).dispatchEvent(evalCheckboxListEvent);
   });
 
   return tabListItemElement;
 };
 
-const buildTabList = (tabs, tabList) =>
+const buildTabList = (tabs, tabList) => {
+  if (tabs.length === 1) tabList.children[0].setAttribute('hidden', true);
   tabs.forEach(tab =>
-    currentSession.push(tabList.appendChild(buildTabListItemElement(tab))));
+    currentSessionTabs.push(tabList.appendChild(buildTabListItemElement(tab))));
+  };
 
 const handleFeatureButtonClick = (buttons, views) => (event) => {
   toggleCssClass(CLASS_SELECTED, ...buttons);
@@ -94,12 +95,13 @@ const saveSubsession = async (event) => {
 
   const subsessionStorage = await getSubsessionStorage() || {};
 
-  if (Object.keys(subsessionStorage).length > 0 && Object.keys(subsessionStorage).includes(newSubsessionName.value)) {
-    //TODO: Turn this into user-facing message.
-    //TODO: Checkbox to overwrite existing?
-    //TODO: Checkbox to close tabs on save?
-    return console.log('subsession with name provided already exists');
-  }
+  if (Object.keys(subsessionStorage).length > 0
+    && Object.keys(subsessionStorage).includes(newSubsessionName.value)) {
+      //TODO: Turn this into user-facing message.
+      //TODO: Checkbox to overwrite existing?
+      //TODO: Checkbox to close tabs on save?
+      return console.log('subsession with name provided already exists');
+    }
 
   setSubsessionStorage({[newSubsessionName.value]: tabsToSave});
 };
@@ -109,9 +111,9 @@ const selectAllTabs = (tabListElement) => (event) => {
     child.children[0].checked = event.target.checked);
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+const app = async () => {
   const tabListElement = document.getElementById('tab-list');
-  const selectAllTabsElement = document.getElementById('select-all-tabs');
+  const selectAllTabsElement = document.getElementById(SELECT_ALL_TABS);
   const listButton = document.getElementById('list-subsessions');
   const newSubsessionButton = document.getElementById('new-subsession');
   const newSubsessionView = document.getElementById('tab-list-container');
@@ -121,6 +123,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentWindowTabs = await getCurrentWindowTabs();
 
   selectAllTabsElement.addEventListener(EVENT_CLICK, selectAllTabs(tabListElement));
+  selectAllTabsElement.addEventListener(EVENT_EVAL_CHECKBOX_LIST, (event) => {
+    const checkboxValues = Array.from(tabListElement.children).map((child) =>
+      child.children[0].checked);
+    checkboxValues.shift();
+
+    if (checkboxValues.length === 0) {
+      // no tabs
+      selectAllTabsElement.indeterminate = false;
+      selectAllTabsElement.checked = false;
+      return;
+    }
+    if (checkboxValues.every(value => value === true)) {
+      // all tabs checked
+      selectAllTabsElement.indeterminate = false;
+      selectAllTabsElement.checked = true;
+      return;
+    }
+    if (checkboxValues.every(value => value === false)) {
+      // no tabs checked
+      selectAllTabsElement.indeterminate = false;
+      selectAllTabsElement.checked = false;
+      return;
+    }
+    // some tabs checked
+    selectAllTabsElement.indeterminate = true;
+
+    //DONE: Fix indeterminate state behavior. Should deselect on all unselected
+    //      and select on all selected (manual or auto), indeterminate otherwise.
+    //DONE: Handle single tab case
+  });
 
   listButton.addEventListener(EVENT_CLICK,
     handleFeatureButtonClick([listButton, newSubsessionButton],
@@ -133,4 +165,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
 
   buildTabList(currentWindowTabs, tabListElement);
-});
+};
+
+document.addEventListener('DOMContentLoaded', () => app().catch(console.error));
