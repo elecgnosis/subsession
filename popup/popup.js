@@ -111,14 +111,40 @@ const selectAllTabs = (tabListElement) => (event) => {
     child.children[0].checked = event.target.checked);
 };
 
+const buildSubsessionList = async (subsessionListElement) => {
+  const subsessionStorage = await getSubsessionStorage() || {};
+  const subsessionNames = Object.keys(subsessionStorage);
+  if (subsessionNames.length === 0) {
+    //TODO: turn this into user-facing message.
+    return console.log('no subsessions saved.');
+  }
+  subsessionNames.forEach((subsessionName) => {
+    //build subsessionListItemElement
+    const subsessionElement = document.createElement('div');
+    const subsessionRestoreButton = document.createElement('button');
+    subsessionRestoreButton.textContent = 'Restore';
+    subsessionElement.appendChild(subsessionRestoreButton);
+
+    const subsessionSummaryElement = document.createElement('summary');
+    subsessionSummaryElement.textContent = subsessionName;
+    const subsessionDetailElement = document.createElement('details');
+    subsessionDetailElement.appendChild(subsessionSummaryElement);
+    subsessionStorage[subsessionName].forEach((subsessionTab) =>
+      subsessionDetailElement.appendChild(buildTabListItemElement(subsessionTab)));
+      subsessionElement.appendChild(subsessionDetailElement);
+      subsessionListElement.appendChild(subsessionElement);
+  });
+};
+
 const app = async () => {
   const tabListElement = document.getElementById('tab-list');
   const selectAllTabsElement = document.getElementById(SELECT_ALL_TABS);
+  const subsessionListElement = document.getElementById('subsession-list');
   const listButton = document.getElementById('list-subsessions');
   const newSubsessionButton = document.getElementById('new-subsession');
   const newSubsessionView = document.getElementById('tab-list-container');
-  const listSubsessionsView = document.getElementById('subsession-list');
   const saveSubsessionButton = document.getElementById('save-subsession');
+  const listSubsessionsView = document.getElementById('subsession-list');
 
   const currentWindowTabs = await getCurrentWindowTabs();
 
@@ -154,9 +180,11 @@ const app = async () => {
     //DONE: Handle single tab case
   });
 
-  listButton.addEventListener(EVENT_CLICK,
+  listButton.addEventListener(EVENT_CLICK, (event) => {
+    buildSubsessionList(subsessionListElement);
     handleFeatureButtonClick([listButton, newSubsessionButton],
-      [newSubsessionView, listSubsessionsView]));
+      [newSubsessionView, listSubsessionsView])(event);
+  });
 
   newSubsessionButton.addEventListener(EVENT_CLICK,
     handleFeatureButtonClick([listButton, newSubsessionButton],
