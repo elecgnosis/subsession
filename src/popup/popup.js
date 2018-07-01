@@ -16,7 +16,8 @@ const getSubsessionStorage = () => (new Promise((resolve, reject) =>
 const getCurrentWindowTabs = () => (new Promise((resolve, reject) =>
   chrome.tabs.query({currentWindow: true}, resolve)));
 const setSubsessionStorage = (item) => (new Promise((resolve, reject) =>
-  chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
+  chrome.storage.local.set(undefined, resolve)));
+  // chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
 
 const currentSessionTabs = [];
 currentSessionTabs
@@ -186,9 +187,11 @@ const app = async () => {
       [newSubsessionView, listSubsessionsView])(event);
   });
 
-  newSubsessionButton.addEventListener(EVENT_CLICK,
+  newSubsessionButton.addEventListener(EVENT_CLICK, (event) => {
+    subsessionListElement.innerHTML = '';
     handleFeatureButtonClick([listButton, newSubsessionButton],
-      [newSubsessionView, listSubsessionsView]));
+      [newSubsessionView, listSubsessionsView])(event);
+    });
 
   saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
 

@@ -1,0 +1,30 @@
+{
+  "name": "subsession",
+  "version": "0.1.0",
+  "description": "Saves tabs from current window to a subsession that can be restored on any synced desktop browser.",
+  "main": "app/background.js",
+  "scripts": {
+    "start": "npm run watch",
+    "rm:public": "cls && del /q public\\* && FOR /d %D IN (public\\*) DO @rd /S /Q %D || exit 0",
+    "build": "npm run rm:public --silent & brunch build",
+    "build:prod": "npm run rm:public & brunch build -p",
+    "watch": "brunch watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elecgnosis/subsession.git"
+  },
+  "keywords": [
+    "chrome",
+    "extension"
+  ],
+  "author": "elecgnosis",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/elecgnosis/subsession/issues"
+  },
+  "homepage": "https://github.com/elecgnosis/subsession#readme",
+  "devDependencies": {
+    "html-pages-brunch": "^2.7.0"
+  }
+}
