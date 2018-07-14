@@ -8,6 +8,7 @@ const CLASS_HIDE = 'hide';
 const EVENT_CLICK = 'click';
 const EVENT_EVAL_CHECKBOX_LIST = 'eval-checkbox-list';
 const SUBSESSIONSTORAGEIDENTIFIER = 'subsession@subsession.extensions.chrome';
+const UI_NO_SUBSESSIONS = 'No subsessions found.';
 const evalCheckboxListEvent = new Event(EVENT_EVAL_CHECKBOX_LIST);
 
 const getSubsessionStorage = () => (new Promise((resolve, reject) =>
@@ -16,11 +17,9 @@ const getSubsessionStorage = () => (new Promise((resolve, reject) =>
 const getCurrentWindowTabs = () => (new Promise((resolve, reject) =>
   chrome.tabs.query({currentWindow: true}, resolve)));
 const setSubsessionStorage = (item) => (new Promise((resolve, reject) =>
-  chrome.storage.local.set(undefined, resolve)));
-  // chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
+  chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
 
 const currentSessionTabs = [];
-currentSessionTabs
 
 const setElementAttributes = (element, attrs) => {
   Object.keys(attrs).forEach((key) =>
@@ -72,15 +71,20 @@ const toggleCssClass = (cssClass, element1, element2) => {
 
 const saveSubsession = async (event) => {
   event.preventDefault();
-  const newSubsessionName = document.getElementById('new-subsession-name');
+  const newSubsessionNameElement = document.getElementById('new-subsession-name');
+  let newSubsessionName;
 
   const currentTabs = await getCurrentWindowTabs();
   //TODO: disable button until something is typed
   //TODO: check input against existing subsession names
   //newSubsessinName is in scope here but none of the other variables are. Why?
-  if (newSubsessionName.value.trim().length === 0) {
-    //TODO: Turn this into user-facing message.
-    return console.log('no name provided');
+
+  if (newSubsessionNameElement.value.trim().length > 0) {
+    newSubsessionName = newSubsessionNameElement.value;
+  } else {
+    // I`t's okay to not have a name. Just use a timestamp. But that also means...
+    //TODO: Save date with subsession.
+    newSubsessionName = new Date().toISOString();
   }
 
   //TODO: save document.documentElement.scrollTop value to pop back to scroll location on restore
@@ -90,21 +94,37 @@ const saveSubsession = async (event) => {
         .map((child) => child.children[0].value)
           .includes(tab.id.toString()));
   if (tabsToSave.length === 0) {
-    //TODO: Turn this into user-facing message.
+    //TODO: UI Message
     return console.log('no tabs selected'); //nothing to do
   }
 
   const subsessionStorage = await getSubsessionStorage() || {};
 
-  if (Object.keys(subsessionStorage).length > 0
-    && Object.keys(subsessionStorage).includes(newSubsessionName.value)) {
-      //TODO: Turn this into user-facing message.
+  if (Object.keys(subsessionStorage).includes(newSubsessionName)) {
+      //TODO: UI Message
       //TODO: Checkbox to overwrite existing?
       //TODO: Checkbox to close tabs on save?
       return console.log('subsession with name provided already exists');
     }
 
-  setSubsessionStorage({[newSubsessionName.value]: tabsToSave});
+  // are you comfortable with the discrepancy between the default name and the time saved?
+  const subsessionToSave = {
+      [newSubsessionName]: {
+        tabs: tabsToSave,
+        date: new Date().toISOString(),
+      }
+  };
+
+  try {
+    await setSubsessionStorage(Object.assign(
+      {}, subsessionStorage, {[newSubsessionName]: tabsToSave}));
+    console.log('action complete');
+    //TODO: UI Message
+    newSubsessionNameElement.value = '';
+  } catch (error) {
+    // TODO: UI action failed
+    console.error(error);
+  }
 };
 
 const selectAllTabs = (tabListElement) => (event) => {
@@ -115,10 +135,15 @@ const selectAllTabs = (tabListElement) => (event) => {
 const buildSubsessionList = async (subsessionListElement) => {
   const subsessionStorage = await getSubsessionStorage() || {};
   const subsessionNames = Object.keys(subsessionStorage);
+
   if (subsessionNames.length === 0) {
     //TODO: turn this into user-facing message.
+    const noSubsessionsMessageElement = document.createElement('div');
+    noSubsessionsMessageElement.textContent = UI_NO_SUBSESSIONS;
+    subsessionListElement.appendChild(noSubsessionsMessageElement);
     return console.log('no subsessions saved.');
   }
+
   subsessionNames.forEach((subsessionName) => {
     //build subsessionListItemElement
     const subsessionElement = document.createElement('div');
@@ -182,12 +207,18 @@ const app = async () => {
   });
 
   listButton.addEventListener(EVENT_CLICK, (event) => {
+    if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
+      return;
+    }
     buildSubsessionList(subsessionListElement);
     handleFeatureButtonClick([listButton, newSubsessionButton],
       [newSubsessionView, listSubsessionsView])(event);
   });
 
   newSubsessionButton.addEventListener(EVENT_CLICK, (event) => {
+    if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
+      return;
+    }
     subsessionListElement.innerHTML = '';
     handleFeatureButtonClick([listButton, newSubsessionButton],
       [newSubsessionView, listSubsessionsView])(event);

@@ -11,13 +11,13 @@ module.exports = {
         },
         'src/background.js': {
           'background.js': 'src/background.js',
-        }
+        },
       },
     },
     stylesheets: {
       joinTo: {
         'popup.css': 'src/**/*.css',
-      }
+      },
     },
   },
   modules: {
@@ -27,7 +27,12 @@ module.exports = {
     htmlPages: {
       destination(path) {
         return path.replace(/^.*[\/\\](.*)\.html$/, "$1.html");
-      }
-    }
+      },
+    },
+    uglify: {
+      compress: {
+        sequences: true,
+      },
+    },
   },
 };
