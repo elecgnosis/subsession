@@ -5,6 +5,7 @@
 // TODO: show favicon in list
 
 const chromeApi = require('./chromeAPIWrapper');
+const templateBuilder = require('./templateBuilder');
 
 const SELECT_ALL_TABS = 'select-all-tabs';
 const CLASS_SELECTED = 'selected';
@@ -13,46 +14,6 @@ const EVENT_CLICK = 'click';
 const EVENT_EVAL_CHECKBOX_LIST = 'eval-checkbox-list';
 const UI_NO_SUBSESSIONS = 'No subsessions found.';
 const evalCheckboxListEvent = new Event(EVENT_EVAL_CHECKBOX_LIST);
-
-const currentSessionTabs = [];
-
-const setElementAttributes = (element, attrs) => {
-  Object.keys(attrs).forEach((key) =>
-    element.setAttribute(key, attrs[key]));
-  return element;
-}
-
-const buildTabListItemCheckbox = (tabData) =>
-  setElementAttributes(document.createElement('input'), {
-    type: 'checkbox',
-    name: tabData.id,
-    value: tabData.id,
-    id: tabData.id,
-    checked: true,
-  });
-
-const buildTabListItemElement = (tabData) => {
-  const tabListItemCheckboxLabel = document.createElement('label');
-  tabListItemCheckboxLabel.htmlFor = tabData.id;
-  tabListItemCheckboxLabel.textContent = tabData.title;
-
-  const tabListItemElement = document.createElement('li');
-  tabListItemElement.setAttribute('title', tabData.title);
-  tabListItemElement.appendChild(buildTabListItemCheckbox(tabData));
-  tabListItemElement.appendChild(tabListItemCheckboxLabel);
-
-  tabListItemElement.addEventListener('change', (event) => {
-    document.getElementById(SELECT_ALL_TABS).dispatchEvent(evalCheckboxListEvent);
-  });
-
-  return tabListItemElement;
-};
-
-const buildTabList = (tabs, tabList) => {
-  if (tabs.length === 1) tabList.children[0].setAttribute('hidden', true);
-  tabs.forEach(tab =>
-    currentSessionTabs.push(tabList.appendChild(buildTabListItemElement(tab))));
-  };
 
 const handleFeatureButtonClick = (buttons, views) => (event) => {
   toggleCssClass(CLASS_SELECTED, ...buttons);
@@ -151,7 +112,7 @@ const buildSubsessionList = async (subsessionListElement) => {
     const subsessionDetailElement = document.createElement('details');
     subsessionDetailElement.appendChild(subsessionSummaryElement);
     subsessionStorage[subsessionName].forEach((subsessionTab) =>
-      subsessionDetailElement.appendChild(buildTabListItemElement(subsessionTab)));
+      subsessionDetailElement.appendChild(templateBuilder.buildTabListItemElement(subsessionTab)));
       subsessionElement.appendChild(subsessionDetailElement);
       subsessionListElement.appendChild(subsessionElement);
   });
@@ -221,7 +182,7 @@ const app = async () => {
 
   saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
 
-  buildTabList(currentWindowTabs, tabListElement);
+  templateBuilder.buildTabList(currentWindowTabs, tabListElement);
 };
 
 document.addEventListener('DOMContentLoaded', () => app().catch(console.error));
