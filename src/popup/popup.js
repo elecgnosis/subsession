@@ -13,13 +13,12 @@ const EVENT_CLICK = 'click';
 const UI_NO_SUBSESSIONS = 'No subsessions found.';
 
 const handleFeatureButtonClick = (buttons, views) => (event) => {
-  toggleCssClass(CLASS_SELECTED, ...buttons);
-  toggleCssClass(CLASS_HIDE, ...views);
+  toggleCssClass(CLASS_SELECTED, buttons);
+  toggleCssClass(CLASS_HIDE, views);
 };
 
-const toggleCssClass = (cssClass, element1, element2) => {
-  element1.classList.toggle(cssClass);
-  element2.classList.toggle(cssClass);
+const toggleCssClass = (cssClass, elements) => {
+  elements.forEach(element => element.classList.toggle(cssClass));
 };
 
 const saveSubsession = async (event) => {
@@ -165,43 +164,26 @@ const app = async () => {
     subsessionListElement.innerHTML = '';
     handleFeatureButtonClick([listButton, newSubsessionButton],
       [newSubsessionView, listSubsessionsView])(event);
-    });
-
-    saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
-
-    templateBuilder.buildTabList(currentWindowTabs, tabListElement);
   };
 
   const appButtonEventHandler = (event, buttonHandler) => {
     if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
       return;
     }
-    buttonHandler();
+    buttonHandler(event);
   };
 
   listButton.addEventListener(EVENT_CLICK, (event) => {
     appButtonEventHandler(event, listButtonEventHandler);
-    // if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
-    //   return;
-    // }
-    // buildSubsessionList(subsessionListElement);
-    // handleFeatureButtonClick([listButton, newSubsessionButton],
-    //   [newSubsessionView, listSubsessionsView])(event);
   });
 
   newSubsessionButton.addEventListener(EVENT_CLICK, (event) => {
     appButtonEventHandler(event, newSubsessionButtonEventHandler);
-  //   if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
-  //     return;
-  //   }
-  //   subsessionListElement.innerHTML = '';
-  //   handleFeatureButtonClick([listButton, newSubsessionButton],
-  //     [newSubsessionView, listSubsessionsView])(event);
-  //   });
-  //
-  // saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
-  //
-  // templateBuilder.buildTabList(currentWindowTabs, tabListElement);
+  });
+
+  saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
+
+  templateBuilder.buildTabList(currentWindowTabs, tabListElement);
 };
 
 document.addEventListener('DOMContentLoaded', () => app().catch(console.error));
