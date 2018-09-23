@@ -7,13 +7,10 @@
 const chromeApi = require('./chromeAPIWrapper');
 const templateBuilder = require('./templateBuilder');
 
-const SELECT_ALL_TABS = 'select-all-tabs';
 const CLASS_SELECTED = 'selected';
 const CLASS_HIDE = 'hide';
 const EVENT_CLICK = 'click';
-const EVENT_EVAL_CHECKBOX_LIST = 'eval-checkbox-list';
 const UI_NO_SUBSESSIONS = 'No subsessions found.';
-const evalCheckboxListEvent = new Event(EVENT_EVAL_CHECKBOX_LIST);
 
 const handleFeatureButtonClick = (buttons, views) => (event) => {
   toggleCssClass(CLASS_SELECTED, ...buttons);
@@ -97,7 +94,7 @@ const buildSubsessionList = async (subsessionListElement) => {
     const noSubsessionsMessageElement = document.createElement('div');
     noSubsessionsMessageElement.textContent = UI_NO_SUBSESSIONS;
     subsessionListElement.appendChild(noSubsessionsMessageElement);
-    return console.log('no subsessions saved.');
+    return console.log(UI_NO_SUBSESSIONS);
   }
 
   subsessionNames.forEach((subsessionName) => {
@@ -120,7 +117,7 @@ const buildSubsessionList = async (subsessionListElement) => {
 
 const app = async () => {
   const tabListElement = document.getElementById('tab-list');
-  const selectAllTabsElement = document.getElementById(SELECT_ALL_TABS);
+  const selectAllTabsElement = document.getElementById(templateBuilder.SELECT_ALL_TABS);
   const subsessionListElement = document.getElementById('subsession-list');
   const listButton = document.getElementById('list-subsessions');
   const newSubsessionButton = document.getElementById('new-subsession');
@@ -131,7 +128,7 @@ const app = async () => {
   const currentWindowTabs = await chromeApi.getCurrentWindowTabs();
 
   selectAllTabsElement.addEventListener(EVENT_CLICK, selectAllTabs(tabListElement));
-  selectAllTabsElement.addEventListener(EVENT_EVAL_CHECKBOX_LIST, (event) => {
+  selectAllTabsElement.addEventListener(templateBuilder.EVENT_EVAL_CHECKBOX_LIST, (event) => {
     const checkboxValues = Array.from(tabListElement.children).map((child) =>
       child.children[0].checked);
     checkboxValues.shift();
