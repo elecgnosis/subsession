@@ -153,33 +153,55 @@ const app = async () => {
     }
     // some tabs checked
     selectAllTabsElement.indeterminate = true;
-
-    //DONE: Fix indeterminate state behavior. Should deselect on all unselected
-    //      and select on all selected (manual or auto), indeterminate otherwise.
-    //DONE: Handle single tab case
   });
 
-  listButton.addEventListener(EVENT_CLICK, (event) => {
-    if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
-      return;
-    }
+  const listButtonEventHandler = (event) => {
     buildSubsessionList(subsessionListElement);
     handleFeatureButtonClick([listButton, newSubsessionButton],
       [newSubsessionView, listSubsessionsView])(event);
-  });
+  };
 
-  newSubsessionButton.addEventListener(EVENT_CLICK, (event) => {
-    if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
-      return;
-    }
+  const newSubsessionButtonEventHandler = (event) => {
     subsessionListElement.innerHTML = '';
     handleFeatureButtonClick([listButton, newSubsessionButton],
       [newSubsessionView, listSubsessionsView])(event);
     });
 
-  saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
+    saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
 
-  templateBuilder.buildTabList(currentWindowTabs, tabListElement);
+    templateBuilder.buildTabList(currentWindowTabs, tabListElement);
+  };
+
+  const appButtonEventHandler = (event, buttonHandler) => {
+    if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
+      return;
+    }
+    buttonHandler();
+  };
+
+  listButton.addEventListener(EVENT_CLICK, (event) => {
+    appButtonEventHandler(event, listButtonEventHandler);
+    // if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
+    //   return;
+    // }
+    // buildSubsessionList(subsessionListElement);
+    // handleFeatureButtonClick([listButton, newSubsessionButton],
+    //   [newSubsessionView, listSubsessionsView])(event);
+  });
+
+  newSubsessionButton.addEventListener(EVENT_CLICK, (event) => {
+    appButtonEventHandler(event, newSubsessionButtonEventHandler);
+  //   if (event.currentTarget.classList.contains(CLASS_SELECTED)) {
+  //     return;
+  //   }
+  //   subsessionListElement.innerHTML = '';
+  //   handleFeatureButtonClick([listButton, newSubsessionButton],
+  //     [newSubsessionView, listSubsessionsView])(event);
+  //   });
+  //
+  // saveSubsessionButton.addEventListener(EVENT_CLICK, saveSubsession);
+  //
+  // templateBuilder.buildTabList(currentWindowTabs, tabListElement);
 };
 
 document.addEventListener('DOMContentLoaded', () => app().catch(console.error));
