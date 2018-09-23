@@ -5,13 +5,9 @@ module.exports = {
   },
   files: {
     javascripts: {
-      entryPoints: {
-        'src/popup/popup.js': {
-          'popup.js': 'src/popup/popup.js',
-        },
-        'src/background.js': {
-          'background.js': 'src/background.js',
-        },
+      joinTo: {
+        'popup.js': 'src/popup/*js',
+        'background.js': 'src/background.js',
       },
     },
     stylesheets: {
@@ -21,7 +17,7 @@ module.exports = {
     },
   },
   modules: {
-    wrapper: false,
+    wrapper: 'commonjs',
   },
   plugins: {
     htmlPages: {

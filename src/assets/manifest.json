@@ -8,6 +8,7 @@
     "declarativeContent",
     "activeTab"
   ],
+  "content_security_policy": "script-src 'self' 'sha512-1nf3GFPPak8wR2lbq+5n+62sbZ8UkaeH0k/s5bfuGETsbynCqzIV7pGm9aQL+bHbCOrAkPe+cMJ0s9ymXLmJRg=='",
   "background": {
     "scripts": ["background.js"],
     "persistent": true

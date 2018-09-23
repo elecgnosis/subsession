@@ -2,13 +2,14 @@
   "name": "subsession",
   "version": "0.1.0",
   "description": "Saves tabs from current window to a subsession that can be restored on any synced desktop browser.",
-  "main": "app/background.js",
+  "main": "app/popup.js",
   "scripts": {
     "start": "npm run watch",
     "rm:public": "cls && del /q public\\* && FOR /d %D IN (public\\*) DO @rd /S /Q %D || exit 0",
-    "build": "npm run rm:public --silent & brunch build",
-    "build:prod": "npm run rm:public & brunch build -p",
-    "watch": "brunch watch"
+    "build": "npm run rm:public --silent & brunch build & npm run append:initializer",
+    "build:prod": "npm run rm:public & brunch build -p & npm run append:initializer",
+    "watch": "brunch watch",
+    "append:initializer": "echo >> public/popup.js & echo require('src/popup/popup'); >> public/popup.js"
   },
   "repository": {
     "type": "git",
