@@ -6,7 +6,7 @@ module.exports = {
   files: {
     javascripts: {
       joinTo: {
-        'popup.js': 'src/popup/*js',
+        'popup.js': 'src/popup/*.js',
         'background.js': 'src/background.js',
       },
     },

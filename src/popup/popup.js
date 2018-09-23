@@ -1,26 +1,18 @@
-//TODO: Options: Save New Tabs
-//TODO: show all windows in accordion menu in collapsed state, current window expanded
-//TODO: show favicon in list
+// TODO: break this into files
 
-const requireTest = require('./requiretest');
-requireTest();
+// TODO: Options: Save New Tabs
+// TODO: show all windows in accordion menu in collapsed state, current window expanded
+// TODO: show favicon in list
+
+const chromeApi = require('./chromeAPIWrapper');
 
 const SELECT_ALL_TABS = 'select-all-tabs';
 const CLASS_SELECTED = 'selected';
 const CLASS_HIDE = 'hide';
 const EVENT_CLICK = 'click';
 const EVENT_EVAL_CHECKBOX_LIST = 'eval-checkbox-list';
-const SUBSESSIONSTORAGEIDENTIFIER = 'subsession@subsession.extensions.chrome';
 const UI_NO_SUBSESSIONS = 'No subsessions found.';
 const evalCheckboxListEvent = new Event(EVENT_EVAL_CHECKBOX_LIST);
-
-const getSubsessionStorage = () => (new Promise((resolve, reject) =>
-  chrome.storage.local.get([SUBSESSIONSTORAGEIDENTIFIER], (storage) =>
-    resolve(storage[SUBSESSIONSTORAGEIDENTIFIER]))));
-const getCurrentWindowTabs = () => (new Promise((resolve, reject) =>
-  chrome.tabs.query({currentWindow: true}, resolve)));
-const setSubsessionStorage = (item) => (new Promise((resolve, reject) =>
-  chrome.storage.local.set({[SUBSESSIONSTORAGEIDENTIFIER]: item}, resolve)));
 
 const currentSessionTabs = [];
 
@@ -77,7 +69,7 @@ const saveSubsession = async (event) => {
   const newSubsessionNameElement = document.getElementById('new-subsession-name');
   let newSubsessionName;
 
-  const currentTabs = await getCurrentWindowTabs();
+  const currentTabs = await chromeApi.getCurrentWindowTabs();
   //TODO: disable button until something is typed
   //TODO: check input against existing subsession names
   //newSubsessinName is in scope here but none of the other variables are. Why?
@@ -85,7 +77,7 @@ const saveSubsession = async (event) => {
   if (newSubsessionNameElement.value.trim().length > 0) {
     newSubsessionName = newSubsessionNameElement.value;
   } else {
-    // I`t's okay to not have a name. Just use a timestamp. But that also means...
+    // It's okay to not have a name. Just use a timestamp. But that also means...
     //TODO: Save date with subsession.
     newSubsessionName = new Date().toISOString();
   }
@@ -101,7 +93,7 @@ const saveSubsession = async (event) => {
     return console.log('no tabs selected'); //nothing to do
   }
 
-  const subsessionStorage = await getSubsessionStorage() || {};
+  const subsessionStorage = await chromeApi.getSubsessionStorage() || {};
 
   if (Object.keys(subsessionStorage).includes(newSubsessionName)) {
       //TODO: UI Message
@@ -119,7 +111,7 @@ const saveSubsession = async (event) => {
   };
 
   try {
-    await setSubsessionStorage(Object.assign(
+    await chromeApi.setSubsessionStorage(Object.assign(
       {}, subsessionStorage, {[newSubsessionName]: tabsToSave}));
     console.log('action complete');
     //TODO: UI Message
@@ -136,7 +128,7 @@ const selectAllTabs = (tabListElement) => (event) => {
 };
 
 const buildSubsessionList = async (subsessionListElement) => {
-  const subsessionStorage = await getSubsessionStorage() || {};
+  const subsessionStorage = await chromeApi.getSubsessionStorage() || {};
   const subsessionNames = Object.keys(subsessionStorage);
 
   if (subsessionNames.length === 0) {
@@ -175,7 +167,7 @@ const app = async () => {
   const saveSubsessionButton = document.getElementById('save-subsession');
   const listSubsessionsView = document.getElementById('subsession-list');
 
-  const currentWindowTabs = await getCurrentWindowTabs();
+  const currentWindowTabs = await chromeApi.getCurrentWindowTabs();
 
   selectAllTabsElement.addEventListener(EVENT_CLICK, selectAllTabs(tabListElement));
   selectAllTabsElement.addEventListener(EVENT_EVAL_CHECKBOX_LIST, (event) => {
