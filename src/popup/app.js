@@ -104,6 +104,16 @@ const buildSubsessionList = async (subsessionListElement) => {
     });
     subsessionElement.appendChild(subsessionRestoreButton);
 
+//FIXME: HERE
+    const subsessionDeleteButton = document.createElement('button');
+    subsessionDeleteButton.textContent = 'X';
+    subsessionDeleteButton.addEventListener(EVENT_CLICK, (event) => {
+      // remove subsession from local object by id
+      // persist subsession tabs
+      // remove tab from view
+
+    });
+
     const subsessionSummaryElement = document.createElement('summary');
     subsessionSummaryElement.textContent = subsessionName;
     const subsessionDetailElement = document.createElement('details');

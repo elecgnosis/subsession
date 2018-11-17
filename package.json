@@ -28,5 +28,6 @@
   "devDependencies": {
     "html-pages-brunch": "^2.7.0",
     "uglify-js-brunch": "^2.10.0"
-  }
+  },
+  "dependencies": {}
 }

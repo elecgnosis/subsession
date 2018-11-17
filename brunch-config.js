@@ -30,5 +30,8 @@ module.exports = {
         sequences: true,
       },
     },
+    // babel: {
+    //   presets: ['env',],
+    // },
   },
 };
