@@ -45,7 +45,7 @@ const saveSubsession = async (event) => {
           .includes(tab.id.toString()));
   if (tabsToSave.length === 0) {
     //TODO: UI Message
-    return console.log('no tabs selected'); //nothing to do
+    return console.info('no tabs selected'); //nothing to do
   }
 
   const subsessionStorage = await chromeApi.getSubsessionStorage() || {};
@@ -54,7 +54,7 @@ const saveSubsession = async (event) => {
       //TODO: UI Message
       //TODO: Checkbox to overwrite existing?
       //TODO: Checkbox to close tabs on save?
-      return console.log('subsession with name provided already exists');
+      return console.info('subsession with name provided already exists');
     }
 
   // are you comfortable with the discrepancy between the default name and the time saved?
@@ -68,7 +68,7 @@ const saveSubsession = async (event) => {
   try {
     await chromeApi.setSubsessionStorage(Object.assign(
       {}, subsessionStorage, {[newSubsessionName]: tabsToSave}));
-    console.log('action complete');
+    console.info('action complete');
     //TODO: UI Message
     newSubsessionNameElement.value = '';
   } catch (error) {
@@ -90,7 +90,7 @@ const buildSubsessionList = async (subsessionListElement) => {
     const noSubsessionsMessageElement = document.createElement('div');
     noSubsessionsMessageElement.textContent = CONSTANTS.UI_NO_SUBSESSIONS;
     subsessionListElement.appendChild(noSubsessionsMessageElement);
-    return console.log(CONSTANTS.UI_NO_SUBSESSIONS);
+    return console.info(CONSTANTS.UI_NO_SUBSESSIONS);
   }
 
   subsessionNames.forEach((subsessionName) => {
@@ -98,9 +98,16 @@ const buildSubsessionList = async (subsessionListElement) => {
     const subsessionElement = document.createElement('div');
     const subsessionRestoreButton = document.createElement('button');
     subsessionRestoreButton.textContent = 'Restore';
-    subsessionRestoreButton.addEventListener(EVENT_CLICK, (event) => {
+    subsessionRestoreButton.addEventListener(EVENT_CLICK, async (event) => {
       const subsession = subsessionStorage[subsessionName];
+
+      // FIXME: After doing Promise.all, refactor call and handle error
       chromeApi.addSubsessionTabsToCurrentWindow(subsession);
+      // if (someResult !== null) {
+      //   console.info('subsession restored');
+      // } else {
+      //   console.error(error);
+      // }
     });
     subsessionElement.appendChild(subsessionRestoreButton);
 
